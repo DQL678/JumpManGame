@@ -19,7 +19,7 @@ lightgreen = (144, 238, 144)
 x = 50
 y = 300
 m = 1
-v = 10
+v = 15
 jump = 0
 
 # Load the sprite image for a captivating visual element
