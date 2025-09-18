@@ -77,8 +77,8 @@ def main():
                    "left": pygame.K_LEFT, "right": pygame.K_RIGHT}
 
     # Create players using PNG image
-    player1 = Player(200, 300, "Boneca Ambalabu.png", controls_p1)
-    player2 = Player(600, 300, "Boneca Ambalabu.png", controls_p2)
+    player1 = Player(200, 100, "Boneca Ambalabu.png", controls_p1)
+    player2 = Player(600, 100, "Boneca Ambalabu.png", controls_p2)
 
     all_sprites = pygame.sprite.Group(player1, player2)
 
