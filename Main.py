@@ -1,7 +1,7 @@
 import pygame
 import sys
 
-# --- Constants ---
+# constants
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 FPS = 60
@@ -12,7 +12,7 @@ PLAYER_SIZE = 150
 PLAYER_SPEED = 15
 WHITE = (255, 255, 255)
 
-# --- Player class ---
+# player class
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, image_path, controls):
         super().__init__()
@@ -25,13 +25,13 @@ class Player(pygame.sprite.Sprite):
         self.speed = PLAYER_SPEED
         self.facing_right = True
 
-        # Jump and gravity
+        # jump and gravity
         self.velocity_y = 0
         self.jump_strength = -20
         self.on_ground = False
 
     def update(self, pressed_keys):
-        # Horizontal movement
+        # horizontal movement
         if pressed_keys[self.controls["left"]]:
             self.rect.x -= self.speed
             if self.facing_right:
@@ -44,45 +44,45 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.original_image.copy()
                 self.facing_right = True
 
-        # Jump
+        # jump
         if pressed_keys[self.controls["up"]] and self.on_ground:
             self.velocity_y = self.jump_strength
             self.on_ground = False
 
-        # Apply gravity
+        # gravity
         self.velocity_y += GRAVITY
         self.rect.y += self.velocity_y
 
-        # Ground collision
+        # ground collision
         if self.rect.bottom >= SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
             self.velocity_y = 0
             self.on_ground = True
 
-        # Keep inside screen bounds horizontally
+        # keep inside screen bounds horizontally
         self.rect.x = max(0, min(self.rect.x, SCREEN_WIDTH - PLAYER_SIZE))
 
 
-# --- Main game function ---
+# main game function
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Jump man")
     clock = pygame.time.Clock()
 
-    # Define controls for players
+    # controls for players
     controls_p1 = {"up": pygame.K_w, "down": pygame.K_s,
                    "left": pygame.K_a, "right": pygame.K_d}
     controls_p2 = {"up": pygame.K_UP, "down": pygame.K_DOWN,
                    "left": pygame.K_LEFT, "right": pygame.K_RIGHT}
 
-    # Create players using PNG image
+    # players with png
     player1 = Player(200, 100, "Boneca Ambalabu.png", controls_p1)
     player2 = Player(600, 100, "Boneca Ambalabu.png", controls_p2)
 
     all_sprites = pygame.sprite.Group(player1, player2)
 
-    # Game loop
+    # game loop
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -92,7 +92,7 @@ def main():
         pressed_keys = pygame.key.get_pressed()
         all_sprites.update(pressed_keys)
 
-        # Example collision check
+        # collision check
         if player1.rect.colliderect(player2.rect):
             print("Collision!")
 
