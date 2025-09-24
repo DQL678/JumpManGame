@@ -47,7 +47,7 @@ LEVEL_MAP = [
     "................................................................................"
 ]
 
-# Dynamisk beregning af rækker/kolonner ud fra LEVEL_MAP
+# Dynamisk beregning af rækker ogkolonner ud fra LEVEL_MAP
 ROWS = len(LEVEL_MAP)
 COLUMNS = len(LEVEL_MAP[0])
 TILE_WIDTH = SCREEN_WIDTH / COLUMNS
