@@ -6,10 +6,10 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 FPS = 60
 
-GRAVITY = 0.8
+GRAVITY = 0.9
 
 PLAYER_SIZE = 50
-PLAYER_SPEED = 7
+PLAYER_SPEED = 4
 WHITE = (255, 255, 255)
 
 # Farver
@@ -20,23 +20,23 @@ BG_COLOR = (30, 30, 30)           # baggrund
 LEVEL_MAP = [
     "................................................................................",
     "................................................................................",
-    "......................XXXXX..........................XXXXX......................",
-    "......XXXX............................................................XXXX......",
-    "...........................XXXXX...............XXXXX............................",
-    "XXX..........................................................................XXX",
-    ".................XXXX.....................................XXXX..................",
+    "........................XXX................................XXXXX................",
+    ".....XXXXXX..........XXXXXX................XXXXX......................XXXX......",
+    "....XXXX........................................................................",
+    "..............................................................................XX",
+    ".................XXXXX....................................XXXX..................",
     "..................................XXXXXXXXXXXX..................................",
     "XXXXX......................................................................XXXXX",
-    "..........XXXXXX................................................XXXXXX..........",
-    ".........................XXXXXX..................XXXXXX.........................",
+    "..................................................XXXXXXX........XXXXXX.........",
+    "...........XXXXXX........XXXXXX.................................................",
     "....................................XXXXXXXX....................................",
-    ".................XXXX.....................................XXXX..................",
-    "XXXXX..................................XX..................................XXXXX",
+    "...................................XXXXXXXXX..............XXXX............XXXXXX",
+    "XXXXX............XXXX............XXXXX..........................................",
     "................................................................................",
-    ".....XXXXXXX.........XX........XXXXX........XXXXX.......XX..........XXXXXXX.....",
-    "................................................................................",
-    "...............XXX...........XX....................XX.........XXX...............",
-    "..................................XXXXXXXXXXXX..................................",
+    "............................................XXXXX...................XXXXXXX.....",
+    ".....XXXXXXX..............XXXX..................................................",
+    "......................................................XXXXXXXX..................",
+    ".................XXXX.............XXXXXXXXXXXX..................................",
     "................................................................................"
 ]
 
@@ -93,34 +93,48 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, pressed_keys, platforms):
         # horizontal movement
+        dx = 0
         if pressed_keys[self.controls["left"]]:
-            self.rect.x -= self.speed
+            dx = -self.speed
             if self.facing_right:
                 self.image = pygame.transform.flip(self.original_image, True, False)
                 self.facing_right = False
-
         if pressed_keys[self.controls["right"]]:
-            self.rect.x += self.speed
+            dx = self.speed
             if not self.facing_right:
                 self.image = self.original_image.copy()
                 self.facing_right = True
+
+        self.rect.x += dx
+
+        # horizontal collision
+        for platform in platforms:
+            if self.rect.colliderect(platform):
+                if dx > 0:
+                    self.rect.right = platform.left
+                elif dx < 0:
+                    self.rect.left = platform.right
 
         # jump
         if pressed_keys[self.controls["up"]] and self.on_ground:
             self.velocity_y = self.jump_strength
             self.on_ground = False
 
-        # gravity
+        # vertical movement
         self.velocity_y += GRAVITY
         self.rect.y += self.velocity_y
 
-        # platform collision
+        # vertical collision
         self.on_ground = False
         for platform in platforms:
-            if self.rect.colliderect(platform) and self.velocity_y >=0:
-                self.rect.bottom = platform.top
-                self.velocity_y = 0
-                self.on_ground = True
+            if self.rect.colliderect(platform):
+                if self.velocity_y > 0:
+                    self.rect.bottom = platform.top
+                    self.velocity_y = 0
+                    self.on_ground = True
+                elif self.velocity_y < 0:
+                    self.rect.top = platform.bottom
+                    self.velocity_y = 0
 
         # ground collision
         if self.rect.bottom >= SCREEN_HEIGHT:
@@ -128,7 +142,7 @@ class Player(pygame.sprite.Sprite):
             self.velocity_y = 0
             self.on_ground = True
 
-        # keep inside screen bounds horizontally
+        # keep inside screen bounds
         self.rect.x = max(0, min(self.rect.x, SCREEN_WIDTH - PLAYER_SIZE))
 
 
