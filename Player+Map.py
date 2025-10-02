@@ -1,32 +1,30 @@
 import pygame
 import sys
 
-# constants
+# konstanter
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 FPS = 60
-
 GRAVITY = 0.9
-
 PLAYER_SIZE = 50
 PLAYER_SPEED = 4
-WHITE = (255, 255, 255)
 
-# Farver
-PLATFORM_COLOR = (100, 100, 255)  # blå platforme
-GROUND_COLOR = (200, 50, 50)      # rød bund
-BG_COLOR = (30, 30, 30)           # baggrund
+# farver
+WHITE = (255, 255, 255)
+PLATFORM_COLOR = (100, 100, 255)
+GROUND_COLOR = (200, 50, 50)
+BG_COLOR = (30, 30, 30)
 
 LEVEL_MAP = [
     "................................................................................",
     "................................................................................",
     "........................XXX................................XXXXX................",
-    ".....XXXXXX..........XXXXXX................XXXXX......................XXXX......",
-    "....XXXX........................................................................",
-    "..............................................................................XX",
+    ".........XXXX........XXXXXX................XXXXX......................XXX.......",
+    "........XXXXX...................................................................",
+    "......XXX.....................................................................XX",
     ".................XXXXX....................................XXXX..................",
     "..................................XXXXXXXXXXXX..................................",
-    "XXXXX......................................................................XXXXX",
+    "XXXXX.......................................................................XXXX",
     "..................................................XXXXXXX........XXXXXX.........",
     "...........XXXXXX........XXXXXX.................................................",
     "....................................XXXXXXXX....................................",
@@ -40,13 +38,11 @@ LEVEL_MAP = [
     "................................................................................"
 ]
 
-# Dynamisk beregning af rækker/kolonner ud fra LEVEL_MAP
 ROWS = len(LEVEL_MAP)
 COLUMNS = len(LEVEL_MAP[0])
 TILE_WIDTH = SCREEN_WIDTH / COLUMNS
 TILE_HEIGHT = SCREEN_HEIGHT / ROWS
 
-# map class
 class Map:
     def __init__(self):
         self.platforms = []
@@ -54,26 +50,19 @@ class Map:
         self.load_map()
 
     def load_map(self):
-        """Laver platformene ud fra LEVEL_MAP + en rød bund."""
         self.platforms.clear()
-
-        # Byg de blå platforme
         for row_index, row in enumerate(LEVEL_MAP):
             for col_index, tile in enumerate(row):
                 if tile == "X":
                     rect = pygame.Rect(col_index * TILE_WIDTH, row_index * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT)
                     self.platforms.append(rect)
-
-        # Lav rød bund-platform (hele bunden af skærmen)
         self.ground = pygame.Rect(0, SCREEN_HEIGHT - TILE_HEIGHT, SCREEN_WIDTH, TILE_HEIGHT)
 
     def draw(self, screen):
-        """Tegner platforme og bund på skærmen."""
         pygame.draw.rect(screen, GROUND_COLOR, self.ground)
         for platform in self.platforms:
             pygame.draw.rect(screen, PLATFORM_COLOR, platform)
 
-# player class
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, image_path, controls):
         super().__init__()
@@ -86,13 +75,15 @@ class Player(pygame.sprite.Sprite):
         self.speed = PLAYER_SPEED
         self.facing_right = True
 
-        # jump and gravity
         self.velocity_y = 0
         self.jump_strength = -15
         self.on_ground = False
 
-    def update(self, pressed_keys, platforms):
-        # horizontal movement
+        self.score = 0
+        self.start_x = x
+        self.start_y = y
+
+    def update(self, pressed_keys, platforms, ground, opponent):
         dx = 0
         if pressed_keys[self.controls["left"]]:
             dx = -self.speed
@@ -107,7 +98,6 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.x += dx
 
-        # horizontal collision
         for platform in platforms:
             if self.rect.colliderect(platform):
                 if dx > 0:
@@ -115,16 +105,13 @@ class Player(pygame.sprite.Sprite):
                 elif dx < 0:
                     self.rect.left = platform.right
 
-        # jump
         if pressed_keys[self.controls["up"]] and self.on_ground:
             self.velocity_y = self.jump_strength
             self.on_ground = False
 
-        # vertical movement
         self.velocity_y += GRAVITY
         self.rect.y += self.velocity_y
 
-        # vertical collision
         self.on_ground = False
         for platform in platforms:
             if self.rect.colliderect(platform):
@@ -136,24 +123,23 @@ class Player(pygame.sprite.Sprite):
                     self.rect.top = platform.bottom
                     self.velocity_y = 0
 
-        # ground collision
-        if self.rect.bottom >= SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
-            self.velocity_y = 0
-            self.on_ground = True
+        # modstanderen får point ved bund kollision
+        if self.rect.colliderect(ground):
+            opponent.score += 1
+            self.respawn()
 
-        # keep inside screen bounds
         self.rect.x = max(0, min(self.rect.x, SCREEN_WIDTH - PLAYER_SIZE))
 
+    def respawn(self):
+        self.rect.center = (self.start_x, self.start_y)
+        self.velocity_y = 0
 
-# main game function
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Jump man")
     clock = pygame.time.Clock()
 
-    # controls for players
     controls_p1 = {"up": pygame.K_w, "down": pygame.K_s,
                    "left": pygame.K_a, "right": pygame.K_d}
     controls_p2 = {"up": pygame.K_UP, "down": pygame.K_DOWN,
@@ -161,13 +147,12 @@ def main():
 
     game_map = Map()
 
-    # players with png
     player1 = Player(200, 100, "Boneca Ambalabu.png", controls_p1)
     player2 = Player(600, 100, "Boneca Ambalabu.png", controls_p2)
 
     all_sprites = pygame.sprite.Group(player1, player2)
+    font = pygame.font.SysFont(None, 36)
 
-    # game loop
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -176,17 +161,24 @@ def main():
 
         pressed_keys = pygame.key.get_pressed()
 
-        platforms = game_map.platforms + [game_map.ground]
-        player1.update(pressed_keys, platforms)
-        player2.update(pressed_keys, platforms)
+        platforms = game_map.platforms
+        ground = game_map.ground
+
+        player1.update(pressed_keys, platforms, ground, player2)
+        player2.update(pressed_keys, platforms, ground, player1)
 
         screen.fill(BG_COLOR)
         game_map.draw(screen)
         all_sprites.draw(screen)
 
+        score_text_p1 = font.render(f"P1 Score: {player1.score}", True, WHITE)
+        score_text_p2 = font.render(f"P2 Score: {player2.score}", True, WHITE)
+
+        screen.blit(score_text_p1, (10, 10))
+        screen.blit(score_text_p2, (SCREEN_WIDTH - 200, 10))
+
         pygame.display.flip()
         clock.tick(FPS)
-
 
 if __name__ == "__main__":
     main()
