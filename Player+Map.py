@@ -148,7 +148,7 @@ def main():
     game_map = Map()
 
     player1 = Player(200, 100, "Boneca Ambalabu.png", controls_p1)
-    player2 = Player(600, 100, "Boneca Ambalabu.png", controls_p2)
+    player2 = Player(600, 100, "Frigo Camelo.png", controls_p2)
 
     all_sprites = pygame.sprite.Group(player1, player2)
     font = pygame.font.SysFont(None, 36)
