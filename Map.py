@@ -43,9 +43,15 @@ TILE_HEIGHT = SCREEN_HEIGHT / ROWS
 
 
 class Map:
-    def __init__(self):
+    def __init__(self, screen_width, screen_height):
+        self.screen_width = screen_width
+        self.screen_height = screen_height
         self.platforms = []
         self.ground = None
+        self.rows = len(LEVEL_MAP)
+        self.columns = len(LEVEL_MAP[0])
+        self.tile_width = self.screen_width / self.columns
+        self.tile_height = self.screen_height / self.rows
         self.load_map()
 
     def load_map(self):
@@ -67,25 +73,3 @@ class Map:
         pygame.draw.rect(screen, GROUND_COLOR, self.ground)
         for platform in self.platforms:
             pygame.draw.rect(screen, PLATFORM_COLOR, platform)
-
-
-# Test
-if __name__ == "__main__":
-    pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Map Generator Test")
-    clock = pygame.time.Clock()
-
-    game_map = Map()
-
-    while True:
-        screen.fill(BG_COLOR)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-
-        game_map.draw(screen)
-        pygame.display.flip()
-        clock.tick(60)
