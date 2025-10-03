@@ -2,7 +2,8 @@ Dette er et platformspil for to spillere, bygget med Pygame. Spillerne konkurrer
 
 Krav:
 Python,
-Pygame-biblioteket.
+Pygame-biblioteket,
+sørg for at du har billedfilen Boneca Ambalabu.png i samme mappe som koden.
 
 Player kontrol:
 W, A og D og piletasterne (undtagen pil nedad).  
