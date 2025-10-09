@@ -22,7 +22,6 @@ BTN_BG = (60, 60, 60)
 BTN_BG_HOVER = (90, 90, 90)
 ORANGE = (255, 165, 0)
 
-# ================= LEVEL MAP =================
 LEVEL_MAP = [
     "................................................................................",
     "................................................................................",
@@ -51,8 +50,6 @@ COLUMNS = len(LEVEL_MAP[0])
 TILE_WIDTH = SCREEN_WIDTH / COLUMNS
 TILE_HEIGHT = SCREEN_HEIGHT / ROWS
 
-
-# ================= STARTSKÆRM =================
 def show_start_screen(screen, clock):
     pygame.font.init()
     title_font = pygame.font.SysFont(None, 72)
@@ -115,7 +112,6 @@ def show_start_screen(screen, clock):
         clock.tick(FPS)
 
 
-# ================= MAP =================
 class Map:
     def __init__(self):
         self.platforms = []
@@ -137,7 +133,6 @@ class Map:
             pygame.draw.rect(screen, PLATFORM_COLOR, platform)
 
 
-# ================= BOMB =================
 class Bomb(pygame.sprite.Sprite):
     def __init__(self, x, y, image, game_map):
         super().__init__()
@@ -193,7 +188,6 @@ class Bomb(pygame.sprite.Sprite):
         # Updateres til det nye platform array
         self.game_map.platforms = new_platforms
 
-# ================= PLAYER =================
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, image_path, controls):
         super().__init__()
@@ -279,8 +273,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.center = (self.start_x, self.start_y)
         self.velocity_y = 0
 
-
-# ================= MAIN =================
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -296,10 +288,11 @@ def main():
 
     game_map = Map()
 
-    # Load images
     bomb_img = pygame.image.load("bombeRealistic.png").convert_alpha()
     player1 = Player(200, 100, "Boneca Ambalabu.png", controls_p1)
     player2 = Player(600, 100, "Frigo Camelo.png", controls_p2)
+    player2.image = pygame.transform.flip(player2.original_image, True, False)
+    player2.facing_right = False
 
     all_sprites = pygame.sprite.Group(player1, player2)
     bombs_group = pygame.sprite.Group()
@@ -329,7 +322,7 @@ def main():
         score_text_p2 = font.render(f"P2 Score: {player2.score}", True, WHITE)
 
         screen.blit(score_text_p1, (10, 10))
-        screen.blit(score_text_p2, (SCREEN_WIDTH - 200, 10))
+        screen.blit(score_text_p2, (SCREEN_WIDTH - 145, 10))
 
         pygame.display.flip()
         clock.tick(FPS)
