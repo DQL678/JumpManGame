@@ -162,13 +162,14 @@ class Bomb(pygame.sprite.Sprite):
                     break
             # Eksploderer bomben hvis timeren er gået
             if current_time - self.spawn_time >= BOMB_TIMER:
-                self.explode()
+                self.exploded = True
+                self.explosion_time = pygame.time.get_ticks()
         else:
             # Eksplosion fjernes efter 1 sekund
             if current_time - self.explosion_time >= 1000:
                 self.kill()
 
-    def explode(self):
+    def explode(self, player1, player2):
         self.exploded = True
         self.explosion_time = pygame.time.get_ticks()
 
@@ -192,6 +193,13 @@ class Bomb(pygame.sprite.Sprite):
             new_platforms.append(platform)
         # Updateres til det nye platform array
         self.game_map.platforms = new_platforms
+
+        # Spiller dør ved kollision af eksplosion
+        for player, opponent in [(player1, player2), (player2, player1)]:
+            if self.rect.colliderect(player.rect):
+                opponent.score += 1
+                player.respawn()
+
 
 # ================= PLAYER =================
 class Player(pygame.sprite.Sprite):
@@ -317,6 +325,12 @@ def main():
 
         player1.update(pressed_keys, game_map, ground, player2, bombs_group, bomb_img)
         player2.update(pressed_keys, game_map, ground, player1, bombs_group, bomb_img)
+
+        for bomb in bombs_group:
+            if not bomb.exploded and pygame.time.get_ticks() - bomb.spawn_time >= BOMB_TIMER:
+                bomb.explode(player1, player2)
+            elif bomb.exploded and pygame.time.get_ticks() - bomb.explosion_time >= 1000:
+                bomb.kill()
 
         bombs_group.update()
 

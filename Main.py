@@ -233,7 +233,6 @@ def main():
 
         pressed_keys = pygame.key.get_pressed()
 
-        platforms = game_map.platforms
         ground = game_map.ground
 
         player1.update(pressed_keys, platforms, ground, player2)
