@@ -22,7 +22,7 @@ BTN_BG = (60, 60, 60)
 BTN_BG_HOVER = (90, 90, 90)
 ORANGE = (255, 165, 0)
 
-# ================= LEVEL MAP =================
+# LEVEL MAP
 LEVEL_MAP = [
     "................................................................................",
     "................................................................................",
@@ -52,7 +52,7 @@ TILE_WIDTH = SCREEN_WIDTH / COLUMNS
 TILE_HEIGHT = SCREEN_HEIGHT / ROWS
 
 
-# ================= STARTSKÆRM =================
+# STARTSKÆRM
 def show_start_screen(screen, clock):
     pygame.font.init()
     title_font = pygame.font.SysFont(None, 72)
@@ -66,7 +66,7 @@ def show_start_screen(screen, clock):
         "Spiller 1: A/D for at gå, W for at hoppe, LSHIFT for at smide bomber",
         "Spiller 2: Venstre/Højre for at gå, Pil op for at hoppe, RCTRL for at smide bomber",
         "",
-        "Mål: Få modstanderen til at falde ned fra banen.",
+        "Mål: Ramme modstanderen med bombe eller få dem til at at falde ned fra banen.",
         "Første spiller til at nå 3 point vinder.",
         "",
         "Tryk ENTER eller SPACE for at starte",
@@ -115,7 +115,7 @@ def show_start_screen(screen, clock):
         clock.tick(FPS)
 
 
-# ================= MAP =================
+# MAP
 class Map:
     def __init__(self):
         self.platforms = []
@@ -137,9 +137,9 @@ class Map:
             pygame.draw.rect(screen, PLATFORM_COLOR, platform)
 
 
-# ================= BOMB =================
+# BOMB
 class Bomb(pygame.sprite.Sprite):
-    def __init__(self, x, y, image, game_map):
+    def __init__(self, x, y, image, game_map, players):
         super().__init__()
         self.image = pygame.transform.scale(image, (BOMB_SIZE * 2, BOMB_SIZE * 2))
         self.rect = self.image.get_rect(center=(x, y))
@@ -147,6 +147,7 @@ class Bomb(pygame.sprite.Sprite):
         self.exploded = False
         self.explosion_time = 0
         self.game_map = game_map
+        self.players = players
 
     def update(self):
         current_time = pygame.time.get_ticks()
@@ -193,7 +194,13 @@ class Bomb(pygame.sprite.Sprite):
         # Updateres til det nye platform array
         self.game_map.platforms = new_platforms
 
-# ================= PLAYER =================
+        for player in self.players:
+            if self.rect.colliderect(player.rect):
+                player.opponent.score += 1
+                player.respawn()
+
+
+# PLAYER
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, image_path, controls):
         super().__init__()
@@ -216,7 +223,9 @@ class Player(pygame.sprite.Sprite):
 
         self.drop_cooldown = 0
 
-    def update(self, pressed_keys, game_map, ground, opponent, bombs_group, bomb_img):
+        self.opponent = None
+
+    def update(self, pressed_keys, game_map, ground, opponent, bombs_group, bomb_img, players):
         dx = 0
         if pressed_keys[self.controls["left"]]:
             dx = -self.speed
@@ -263,7 +272,7 @@ class Player(pygame.sprite.Sprite):
         # Drop bombe
         if "drop" in self.controls and pressed_keys[self.controls["drop"]] and self.drop_cooldown == 0:
             # Bombe oprettes
-            bomb = Bomb(self.rect.centerx, self.rect.bottom, bomb_img, game_map)
+            bomb = Bomb(self.rect.centerx, self.rect.bottom, bomb_img, game_map, players)
             bombs_group.add(bomb)
             # Vent 100 frames for at kunne droppe en bombe mere (forhindrer bombe spam)
             self.drop_cooldown = 50
@@ -280,7 +289,7 @@ class Player(pygame.sprite.Sprite):
         self.velocity_y = 0
 
 
-# ================= MAIN =================
+# MAIN
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -301,6 +310,10 @@ def main():
     player1 = Player(200, 100, "Boneca Ambalabu.png", controls_p1)
     player2 = Player(600, 100, "Frigo Camelo.png", controls_p2)
 
+    player1.opponent = player2
+    player2.opponent = player1
+    players = [player1, player2]
+
     all_sprites = pygame.sprite.Group(player1, player2)
     bombs_group = pygame.sprite.Group()
     font = pygame.font.SysFont(None, 36)
@@ -315,8 +328,8 @@ def main():
         ground = game_map.ground
         platforms = game_map.platforms
 
-        player1.update(pressed_keys, game_map, ground, player2, bombs_group, bomb_img)
-        player2.update(pressed_keys, game_map, ground, player1, bombs_group, bomb_img)
+        player1.update(pressed_keys, game_map, ground, player2, bombs_group, bomb_img, players)
+        player2.update(pressed_keys, game_map, ground, player1, bombs_group, bomb_img, players)
 
         bombs_group.update()
 
@@ -329,7 +342,21 @@ def main():
         score_text_p2 = font.render(f"P2 Score: {player2.score}", True, WHITE)
 
         screen.blit(score_text_p1, (10, 10))
-        screen.blit(score_text_p2, (SCREEN_WIDTH - 200, 10))
+        screen.blit(score_text_p2, (SCREEN_WIDTH - 140, 10))
+
+        if player1.score >= 3 or player2.score >= 3:
+            winner = "Spiller 1" if player1.score >= 3 else "Spiller 2"
+            win_text = font.render(f"{winner} vinder!", True, WHITE)
+            screen.blit(win_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 500))
+            pygame.display.flip()
+            pygame.time.wait(1500)
+            show_start_screen(screen, clock)
+            player1.score = 0
+            player2.score = 0
+            player1.respawn()
+            player2.respawn()
+            game_map.load_map()
+            bombs_group.empty()
 
         pygame.display.flip()
         clock.tick(FPS)
