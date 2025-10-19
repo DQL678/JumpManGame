@@ -17,5 +17,11 @@ Spillerne starter på hver sin side af skærmen. Brug tasterne hop og bevægelse
 Link til Trello: https://trello.com/b/pA3y1TkX/objektorienteret-spil 
 
 Klassediagrammer:
+
 ![](img/ClassDiagram.png) 
 
+Flowcharts over programmet:
+
+![](img/StartAfFlowchart.png) 
+
+![](img/FlowchartMain().png) 
