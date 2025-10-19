@@ -14,6 +14,8 @@ Spiller 2: Venstre/Højre pil for at gå vesntre og højre, pil op for at hoppe,
 
 Spillerne starter på hver sin side af skærmen. Brug tasterne hop og bevægelse til at undgå at falde ned. Hvis en spiller rammer jorden eller en bombe, får modstanderen 1 point. Point vises øverst på skærmen.
 
+For at starte så tryk "Run" på "Spillet.py" 
+
 Link til Trello: https://trello.com/b/pA3y1TkX/objektorienteret-spil 
 
 Klassediagrammer:
