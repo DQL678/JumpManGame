@@ -6,7 +6,7 @@ Dette er et platformspil for to spillere, bygget med Pygame. Spillerne konkurrer
 Krav til at køre spillet:
 Python,
 Pygame-biblioteket,
-sørg for at du har filerne til billederne Boneca Ambalabu.png og Boneca Ambalabu.png i samme mappe som koden.
+sørg for at du har filerne til billederne Boneca Ambalabu.png og Frigo Camelo.png i samme mappe som koden.
 
 Player kontrol:
 Spiller 1: A/D for at gå til venstre og højre, W for at hoppe, LSHIFT for at smide bomber.
